@@ -9,4 +9,10 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(envs)
+
+	userPath,err := GetUserHome()
+	if err !=nil{
+		fmt.Println(err)
+	}
+	fmt.Println(userPath)
 }

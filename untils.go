@@ -43,3 +43,12 @@ func GetCondaEnvs(path string) ([]string,error)  {
 	}
 	return envs,nil
 }
+
+// 获取用户家目录
+func GetUserHome() (string,error) {
+	path,err := os.UserHomeDir()
+	if err!=nil{
+		return "", err
+	}
+	return path,nil
+}
