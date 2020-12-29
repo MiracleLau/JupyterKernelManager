@@ -7,14 +7,17 @@ import (
 )
 
 const PATH_SEPARATOR = string(os.PathSeparator)
+
+type
+
 // 获取所有的conda路径
-func GetCondaPath() string  {
+func GetCondaPath() string {
 	var condaPath = ""
 	if path := os.Getenv("PATH"); path != "" {
 		// 分割变量
-		envs := strings.Split(path,";")
-		for _,env := range envs{
-			if IsFileExist(strings.Join([]string{env,"Scripts","conda.exe"},PATH_SEPARATOR)){
+		envs := strings.Split(path, ";")
+		for _, env := range envs {
+			if IsFileExist(strings.Join([]string{env, "Scripts", "conda.exe"}, PATH_SEPARATOR)) {
 				condaPath = env
 			}
 		}
@@ -29,26 +32,26 @@ func IsFileExist(path string) bool {
 }
 
 // 获取所有的conda环境
-func GetCondaEnvs(path string) ([]string,error)  {
-	envPath := strings.Join([]string{path,"envs"},PATH_SEPARATOR)
-	dir,err := ioutil.ReadDir(envPath)
-	if err != nil{
+func GetCondaEnvs(path string) ([]string, error) {
+	envPath := strings.Join([]string{path, "envs"}, PATH_SEPARATOR)
+	dir, err := ioutil.ReadDir(envPath)
+	if err != nil {
 		return nil, err
 	}
 	var envs []string
-	for _,p := range dir{
-		if p.IsDir(){
+	for _, p := range dir {
+		if p.IsDir() {
 			envs = append(envs, p.Name())
 		}
 	}
-	return envs,nil
+	return envs, nil
 }
 
 // 获取用户家目录
-func GetUserHome() (string,error) {
-	path,err := os.UserHomeDir()
-	if err!=nil{
+func GetUserHome() (string, error) {
+	path, err := os.UserHomeDir()
+	if err != nil {
 		return "", err
 	}
-	return path,nil
+	return path, nil
 }
