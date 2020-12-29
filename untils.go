@@ -8,7 +8,11 @@ import (
 
 const PATH_SEPARATOR = string(os.PathSeparator)
 
-type
+type KernelJson struct {
+	Argv [5]string	`json:"argv"`
+	DisplayName string	`json:"display_name"`
+	Language string `json:"language"`
+}
 
 // 获取所有的conda路径
 func GetCondaPath() string {
@@ -55,3 +59,4 @@ func GetUserHome() (string, error) {
 	}
 	return path, nil
 }
+
