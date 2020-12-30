@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -9,7 +10,7 @@ import (
 const PATH_SEPARATOR = string(os.PathSeparator)
 
 type KernelJson struct {
-	Argv [5]string	`json:"argv"`
+	Argv []string	`json:"argv"`
 	DisplayName string	`json:"display_name"`
 	Language string `json:"language"`
 }
@@ -36,16 +37,18 @@ func IsFileExist(path string) bool {
 }
 
 // 获取所有的conda环境
-func GetCondaEnvs(path string) ([]string, error) {
+func GetCondaEnvs() (map[string]string,error) {
+	path := GetCondaPath()
 	envPath := strings.Join([]string{path, "envs"}, PATH_SEPARATOR)
 	dir, err := ioutil.ReadDir(envPath)
 	if err != nil {
 		return nil, err
 	}
-	var envs []string
+	var envs map[string]string = make(map[string]string)
 	for _, p := range dir {
 		if p.IsDir() {
-			envs = append(envs, p.Name())
+			pythonPath := strings.Join([]string{envPath,p.Name(),"python.exe"},PATH_SEPARATOR)
+			envs[p.Name()] = pythonPath
 		}
 	}
 	return envs, nil
@@ -60,3 +63,55 @@ func GetUserHome() (string, error) {
 	return path, nil
 }
 
+// 在用户目录生成配置文件
+func GenerateConfigFile(userHome string,envPath string,displayName string) error  {
+	path := strings.Join([]string{userHome,"AppData","Roaming","jupyter","kernels",displayName},PATH_SEPARATOR)
+	if !IsFileExist(path){
+		// 不存在就创建目录
+		err := os.MkdirAll(path,os.ModePerm)
+		if err != nil{
+			return err
+		}
+	}
+	kernelConfig := KernelJson{
+		Argv: []string{
+			envPath,
+			"-m",
+			"ipykernel_launcher",
+			"-f",
+			"{connection_file}",
+		},
+		DisplayName: displayName,
+		Language: "python",
+	}
+	jsonBytes,err := json.Marshal(kernelConfig)
+	if err!=nil{
+		return err
+	}
+	err = ioutil.WriteFile(strings.Join([]string{path,"kernel.json"},PATH_SEPARATOR),jsonBytes,0644)
+	if err!=nil{
+		return err
+	}
+	err = CopyFile("./Images/logo-32x32.png",strings.Join([]string{path,"logo-32x32.png"},PATH_SEPARATOR))
+	if err != nil {
+		return err
+	}
+	err = CopyFile("./Images/logo-64x64.png",strings.Join([]string{path,"logo-64x64.png"},PATH_SEPARATOR))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// 复制文件
+func CopyFile(src string,dst string) error {
+	input, err := ioutil.ReadFile(src)
+	if err!=nil{
+		return err
+	}
+	err = ioutil.WriteFile(dst, input, 0644)
+	if err!=nil{
+		return err
+	}
+	return nil
+}
